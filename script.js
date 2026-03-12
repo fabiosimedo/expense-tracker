@@ -5,20 +5,29 @@ const list = document.getElementById('list');
 const form = document.getElementById('form');
 const text = document.getElementById('text');
 const amount = document.getElementById('amount');
+const transactionTypeInputs = document.querySelectorAll('input[name="transaction-type"]');
+const transactionTypeOptions = document.querySelectorAll('.type-option');
 
-// const dummyTransactions = [
-//   { id: 1, text: 'Flower', amount: -20 },
-//   { id: 2, text: 'Salary', amount: 300 },
-//   { id: 3, text: 'Book', amount: -10 },
-//   { id: 4, text: 'Camera', amount: 150 }
-// ];
-
-const localStorageTransactions = JSON.parse(
-  localStorage.getItem('transactions')
-);
+const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
 
 let transactions =
   localStorage.getItem('transactions') !== null ? localStorageTransactions : [];
+
+function getSelectedTransactionType() {
+  const checkedInput = document.querySelector('input[name="transaction-type"]:checked');
+  return checkedInput ? checkedInput.value : 'expense';
+}
+
+function syncTransactionTypeUI() {
+  const selectedType = getSelectedTransactionType();
+
+  transactionTypeOptions.forEach(option => {
+    const input = option.querySelector('input');
+    option.classList.toggle('active', input.checked);
+  });
+
+  amount.placeholder = selectedType === 'expense' ? 'Enter expense amount...' : 'Enter income amount...';
+}
 
 // Add transaction
 function addTransaction(e) {
@@ -26,24 +35,38 @@ function addTransaction(e) {
 
   if (text.value.trim() === '' || amount.value.trim() === '') {
     alert('Please add a text and amount');
-  } else {
-    const transaction = {
-      id: generateID(),
-      text: text.value,
-      amount: +amount.value
-    };
-
-    transactions.push(transaction);
-
-    addTransactionDOM(transaction);
-
-    updateValues();
-
-    updateLocalStorage();
-
-    text.value = '';
-    amount.value = '';
+    return;
   }
+
+  const numericAmount = Math.abs(Number(amount.value));
+
+  if (Number.isNaN(numericAmount) || numericAmount === 0) {
+    alert('Please enter an amount greater than zero');
+    return;
+  }
+
+  const selectedType = getSelectedTransactionType();
+  const finalAmount = selectedType === 'expense' ? -numericAmount : numericAmount;
+
+  const transaction = {
+    id: generateID(),
+    text: text.value.trim(),
+
+    amount: finalAmount,
+    date: new Date().toISOString()
+  };
+
+  transactions.push(transaction);
+
+  addTransactionDOM(transaction);
+  updateValues();
+  updateLocalStorage();
+
+  text.value = '';
+  amount.value = '';
+  document.getElementById('type-expense').checked = true;
+  syncTransactionTypeUI();
+  text.focus();
 }
 
 // Generate random ID
@@ -51,22 +74,40 @@ function generateID() {
   return Math.floor(Math.random() * 100000000);
 }
 
+function formatCurrency(value) {
+  return `$${Math.abs(value).toFixed(2)}`;
+}
+
+function formatTransactionDate(dateString) {
+  if (!dateString) return '';
+
+  const date = new Date(dateString);
+
+  if (Number.isNaN(date.getTime())) return dateString;
+
+  return date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 // Add transactions to DOM list
 function addTransactionDOM(transaction) {
-  // Get sign
   const sign = transaction.amount < 0 ? '-' : '+';
 
   const item = document.createElement('li');
-
-  // Add class based on value
   item.classList.add(transaction.amount < 0 ? 'minus' : 'plus');
 
   item.innerHTML = `
-    ${transaction.text} <span>${sign}${Math.abs(
-    transaction.amount
-  )}</span> <button class="delete-btn" onclick="removeTransaction(${
-    transaction.id
-  })">x</button>
+    <div class="transaction-info">
+      <span class="transaction-text">${transaction.text}</span><br>
+      <span class="transaction-date">${formatTransactionDate(transaction.date)}</span>
+    </div>
+    <span class="transaction-amount">${sign}${Math.abs(transaction.amount).toFixed(2)}</span>
+    <button class="delete-btn" onclick="removeTransaction(${transaction.id})" aria-label="Remove ${transaction.text}">×</button>
   `;
 
   list.appendChild(item);
@@ -74,23 +115,28 @@ function addTransactionDOM(transaction) {
 
 // Update the balance, income and expense
 function updateValues() {
-  const amounts = transactions.map(transaction => transaction.amount);
+  const amounts = transactions.map(transaction => Number(transaction.amount) || 0);
 
-  const total = amounts.reduce((acc, item) => (acc += item), 0).toFixed(2);
-
+  const total = amounts.reduce((acc, item) => acc + item, 0);
   const income = amounts
     .filter(item => item > 0)
-    .reduce((acc, item) => (acc += item), 0)
-    .toFixed(2);
+    .reduce((acc, item) => acc + item, 0);
+  const expense = amounts
+    .filter(item => item < 0)
+    .reduce((acc, item) => acc + item, 0) * -1;
 
-  const expense = (
-    amounts.filter(item => item < 0).reduce((acc, item) => (acc += item), 0) *
-    -1
-  ).toFixed(2);
+  balance.innerText = `${total < 0 ? '-' : ''}${formatCurrency(total)}`;
+  balance.classList.remove('positive', 'negative');
+  balance.classList.add(total < 0 ? 'negative' : 'positive');
 
-  balance.innerText = `$${total}`;
-  money_plus.innerText = `$${income}`;
-  money_minus.innerText = `$${expense}`;
+  const balanceCard = document.querySelector('.balance-card');
+  if (balanceCard) {
+    balanceCard.classList.remove('balance-positive', 'balance-negative');
+    balanceCard.classList.add(total < 0 ? 'balance-negative' : 'balance-positive');
+  }
+
+  money_plus.innerText = `+${formatCurrency(income)}`;
+  money_minus.innerText = `-${formatCurrency(expense)}`;
 }
 
 // Remove transaction by ID
@@ -98,7 +144,6 @@ function removeTransaction(id) {
   transactions = transactions.filter(transaction => transaction.id !== id);
 
   updateLocalStorage();
-
   init();
 }
 
@@ -113,8 +158,13 @@ function init() {
 
   transactions.forEach(addTransactionDOM);
   updateValues();
+  syncTransactionTypeUI();
 }
 
 init();
+
+transactionTypeInputs.forEach(input => {
+  input.addEventListener('change', syncTransactionTypeUI);
+});
 
 form.addEventListener('submit', addTransaction);

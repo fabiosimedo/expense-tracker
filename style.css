@@ -1,7 +1,13 @@
 @import url('https://fonts.googleapis.com/css?family=Lato&display=swap');
 
 :root {
-  --box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --purple: #7c3aed;
+  --purple-dark: #6d28d9;
+  --green: #2ecc71;
+  --red: #c0392b;
+  --border: #e5e7eb;
+  --text-soft: #6b7280;
 }
 
 * {
@@ -9,30 +15,42 @@
 }
 
 body {
-  background-color: #f7f7f7;
+  background: linear-gradient(180deg, #f8fafc 0%, #f3f4f6 100%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   margin: 0;
+  padding: 24px 16px 40px;
   font-family: 'Lato', sans-serif;
+  color: #111827;
 }
 
 .container {
-  margin: 30px auto;
-  width: 350px;
+  margin: 12px auto;
+  width: 100%;
+  max-width: 420px;
+  background-color: rgba(255, 255, 255, 0.92);
+  border-radius: 20px;
+  padding: 20px 16px 24px;
+  box-shadow: var(--box-shadow);
 }
 
 h1 {
   letter-spacing: 1px;
   margin: 0;
+  word-break: break-word;
+}
+
+h2 {
+  margin: 0;
 }
 
 h3 {
-  border-bottom: 1px solid #bbb;
+  border-bottom: 1px solid var(--border);
   padding-bottom: 10px;
-  margin: 40px 0 10px;
+  margin: 32px 0 12px;
 }
 
 h4 {
@@ -43,18 +61,20 @@ h4 {
 .inc-exp-container {
   background-color: #fff;
   box-shadow: var(--box-shadow);
-  padding: 20px;
+  border-radius: 16px;
+  padding: 16px;
   display: flex;
   justify-content: space-between;
   margin: 20px 0;
+  gap: 12px;
 }
 
-.inc-exp-container > div {
+.inc-exp-container>div {
   flex: 1;
   text-align: center;
 }
 
-.inc-exp-container > div:first-of-type {
+.inc-exp-container>div:first-of-type {
   border-right: 1px solid #dedede;
 }
 
@@ -62,41 +82,94 @@ h4 {
   font-size: 20px;
   letter-spacing: 1px;
   margin: 5px 0;
+  font-weight: 700;
 }
 
 .money.plus {
-  color: #2ecc71;
+  color: var(--green);
 }
 
 .money.minus {
-  color: #c0392b;
+  color: var(--red);
 }
 
 label {
   display: inline-block;
-  margin: 10px 0;
+  margin: 10px 0 8px;
+  font-weight: 700;
 }
 
 input[type='text'],
 input[type='number'] {
-  border: 1px solid #dedede;
-  border-radius: 2px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
   display: block;
   font-size: 16px;
-  padding: 10px;
+  padding: 14px 12px;
   width: 100%;
+  background-color: #fff;
+}
+
+input[type='text']:focus,
+input[type='number']:focus {
+  outline: 2px solid rgba(124, 58, 237, 0.15);
+  border-color: var(--purple);
+}
+
+small {
+  display: block;
+  color: var(--text-soft);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.transaction-type {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.type-option {
+  margin: 0;
+  cursor: pointer;
+}
+
+.type-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.type-option span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.type-option.active span {
+  border-color: var(--purple);
+  background: rgba(124, 58, 237, 0.08);
+  color: var(--purple-dark);
 }
 
 .btn {
   cursor: pointer;
-  background-color: #9c88ff;
+  background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dark) 100%);
   box-shadow: var(--box-shadow);
   color: #fff;
   border: 0;
+  border-radius: 14px;
   display: block;
   font-size: 16px;
-  margin: 10px 0 30px;
-  padding: 10px;
+  font-weight: 700;
+  margin: 16px 0 0;
+  padding: 14px;
   width: 100%;
 }
 
@@ -108,26 +181,40 @@ input[type='number'] {
 .list {
   list-style-type: none;
   padding: 0;
-  margin-bottom: 40px;
+  margin-bottom: 16px;
 }
 
 .list li {
   background-color: #fff;
   box-shadow: var(--box-shadow);
   color: #333;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
   position: relative;
-  padding: 10px;
+  padding: 14px 44px 14px 14px;
   margin: 10px 0;
+  border-radius: 14px;
+}
+
+.transaction-text {
+  overflow-wrap: anywhere;
+}
+
+.transaction-amount {
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .list li.plus {
-  border-right: 5px solid #2ecc71;
+  border-right: 5px solid var(--green);
+  background: rgba(46, 204, 113, 0.08);
 }
 
 .list li.minus {
-  border-right: 5px solid #c0392b;
+  border-right: 5px solid var(--red);
+  background: rgba(192, 57, 43, 0.08);
 }
 
 .delete-btn {
@@ -135,17 +222,109 @@ input[type='number'] {
   background-color: #e74c3c;
   border: 0;
   color: #fff;
-  font-size: 20px;
-  line-height: 20px;
-  padding: 2px 5px;
+  font-size: 18px;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
   position: absolute;
   top: 50%;
-  left: 0;
-  transform: translate(-100%, -50%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  right: 10px;
+  transform: translateY(-50%);
+  opacity: 1;
+  transition: transform 0.2s ease;
 }
 
-.list li:hover .delete-btn {
-  opacity: 1;
+.delete-btn:hover {
+  transform: translateY(-50%) scale(1.05);
+}
+
+.balance-card {
+  background: #fff;
+  box-shadow: var(--box-shadow);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin: 16px 0 20px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.balance-card.balance-positive {
+  background: rgba(46, 204, 113, 0.10);
+}
+
+.balance-card.balance-negative {
+  background: rgba(192, 57, 43, 0.10);
+}
+
+.balance-value {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.balance-value.positive {
+  color: #2ecc71;
+}
+
+.balance-value.negative {
+  color: #c0392b;
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 16px 12px 32px;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 18px 14px 20px;
+    border-radius: 18px;
+  }
+
+  h1 {
+    font-size: 28px;
+  }
+
+  .inc-exp-container {
+    padding: 14px;
+  }
+
+  .money {
+    font-size: 18px;
+  }
+
+  .list li {
+    background-color: #fff;
+    box-shadow: var(--box-shadow);
+    color: #333;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+    position: relative;
+    padding: 14px 44px 14px 14px;
+    margin: 10px 0;
+    border-radius: 14px;
+  }
+
+  .transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .transaction-date {
+    font-size: 11px;
+  }
+
+  .transaction-amount {
+    font-size: 15px;
+  }
+}
+
+.transaction-date {
+  font-size: 12px;
+  color: var(--text-soft);
+  line-height: 1.3;
 }
