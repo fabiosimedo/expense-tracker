@@ -7,6 +7,7 @@ const text = document.getElementById('text');
 const amount = document.getElementById('amount');
 const transactionTypeInputs = document.querySelectorAll('input[name="transaction-type"]');
 const transactionTypeOptions = document.querySelectorAll('.type-option');
+let expenseChart = null;
 
 const localStorageTransactions = JSON.parse(localStorage.getItem('transactions'));
 
@@ -18,6 +19,48 @@ function getSelectedTransactionType() {
   return checkedInput ? checkedInput.value : 'expense';
 }
 
+function updateChart() {
+  const ctx = document.getElementById('expense-chart');
+
+  if (!ctx) return;
+
+  const amounts = transactions.map(t => t.amount);
+
+  const income = amounts
+    .filter(v => v > 0)
+    .reduce((acc, v) => acc + v, 0);
+
+  const expense = amounts
+    .filter(v => v < 0)
+    .reduce((acc, v) => acc + v, 0) * -1;
+
+  if (expenseChart) {
+    expenseChart.destroy();
+  }
+
+  expenseChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Entradas', 'Saídas'],
+      datasets: [{
+        data: [income, expense],
+        backgroundColor: [
+          '#2ecc71',
+          '#c0392b'
+        ]
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+}
+
 function syncTransactionTypeUI() {
   const selectedType = getSelectedTransactionType();
 
@@ -26,7 +69,7 @@ function syncTransactionTypeUI() {
     option.classList.toggle('active', input.checked);
   });
 
-  amount.placeholder = selectedType === 'expense' ? 'Enter expense amount...' : 'Enter income amount...';
+  amount.placeholder = selectedType === 'expense' ? 'Adicione despesa...' : 'Adicione entrada...';
 }
 
 // Add transaction
@@ -34,14 +77,14 @@ function addTransaction(e) {
   e.preventDefault();
 
   if (text.value.trim() === '' || amount.value.trim() === '') {
-    alert('Please add a text and amount');
+    alert('Favor adicionar descrição e valor da transação...');
     return;
   }
 
   const numericAmount = Math.abs(Number(amount.value));
 
   if (Number.isNaN(numericAmount) || numericAmount === 0) {
-    alert('Please enter an amount greater than zero');
+    alert('Favor adicione um valor maior que zero');
     return;
   }
 
@@ -137,6 +180,7 @@ function updateValues() {
 
   money_plus.innerText = `+${formatCurrency(income)}`;
   money_minus.innerText = `-${formatCurrency(expense)}`;
+  updateChart();
 }
 
 // Remove transaction by ID
